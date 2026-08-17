@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPTran — Intelligent Pressure Transient System</title>
+    <style>
+        :root {
+            --navy: #0f2942;
+            --navy-dark: #0a1d30;
+            --accent: #2563eb;
+            --accent-dark: #1d4ed8;
+            --danger: #dc2626;
+            --danger-bg: #fde8e8;
+            --success: #16a34a;
+            --success-bg: #e7f7ec;
+            --neutral-bg: #eef2f6;
+            --border: #d7dee6;
+            --text-dark: #16232f;
+            --text-muted: #5b6b7a;
+            --sidebar-w: 20%;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--neutral-bg);
+            color: var(--text-dark);
+        }
+
+        /* ── Layout shell ── */
+        .app-shell {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            flex: 0 0 auto;
+            background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
+            color: #eaf1f9;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 14px;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 8px 22px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            margin-bottom: 16px;
+        }
+
+        .sidebar-brand img {
+            height: 76px;
+            width: auto;
+            border-radius: 8px;
+            background: #fff;
+            padding: 6px;
+        }
+
+        .nav-group {
+            margin-bottom: 18px;
+        }
+
+        .nav-group-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8fa5ba;
+            padding: 0 10px 8px 10px;
+            font-weight: 700;
+        }
+
+        .nav-group-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            text-align: left;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #eaf1f9;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.86rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .nav-group-toggle:hover {
+            background: rgba(37, 99, 235, 0.28);
+            border-color: rgba(37, 99, 235, 0.55);
+        }
+
+        .nav-group-toggle .chev {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.2s ease;
+            flex: 0 0 auto;
+        }
+
+        .nav-group.open .nav-group-toggle .chev {
+            transform: rotate(180deg);
+        }
+
+        .nav-group-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease;
+        }
+
+        .nav-group.open .nav-group-content {
+            max-height: 300px;
+        }
+
+        .nav-group-content .nav-btn {
+            margin-top: 6px;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            text-align: left;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #eaf1f9;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.86rem;
+            cursor: pointer;
+            margin-bottom: 6px;
+            transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(37, 99, 235, 0.28);
+            border-color: rgba(37, 99, 235, 0.55);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.98);
+        }
+
+        .nav-btn .ic {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn .ic svg {
+            width: 15px;
+            height: 15px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .nav-btn.primary {
+            background: var(--accent);
+            border-color: var(--accent-dark);
+        }
+
+        .nav-btn.primary:hover {
+            background: var(--accent-dark);
+        }
+
+        .nav-box {
+            background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            padding: 16px 14px;
+            margin-top: 18px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        .nav-box .nav-group-label {
+            padding: 0 0 12px 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-box .nav-group-label svg {
+            width: 13px;
+            height: 13px;
+            stroke: #8fa5ba;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .datetime-row {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .datetime-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .datetime-field label {
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #8fa5ba;
+            font-weight: 700;
+            padding-left: 1px;
+        }
+
+        .datetime-field input {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.16);
+            color: #eaf1f9;
+            border-radius: 8px;
+            padding: 9px 10px;
+            font-size: 0.82rem;
+            font-family: inherit;
+            color-scheme: dark;
+            transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .datetime-field input:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .datetime-field input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.28);
+        }
+
+        .nav-box-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 4px 0 14px 0;
+        }
+
+        .sidebar-footer {
+            font-size: 0.66rem;
+            color: #6f8598;
+            text-align: center;
+            padding-top: 14px;
+            margin-top: auto;
+        }
+
+        /* ── Main content ── */
+        .main {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 18px 26px 26px 26px;
+            min-width: 0;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .brand-title {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 26px;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--navy);
+            box-shadow: 0 1px 3px rgba(15,41,66,0.06);
+            flex: 1 1 auto;
+            text-align: center;
+        }
+
+        .brand-title small {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.4px;
+            margin-top: 2px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(15,41,66,0.06);
+        }
+
+        /* ── Section panels (Section 1 / Section 2) ── */
+        .section-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .section-panel {
+            overflow: hidden;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .section-panel.leak {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 1px var(--danger);
+        }
+
+        .section-panel.normal {
+            border-color: var(--success);
+            box-shadow: 0 0 0 1px var(--success);
+        }
+
+        .section-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: var(--navy);
+            color: #fff;
+            padding: 12px 20px;
+        }
+
+        .section-panel-header h3 {
+            font-size: 0.98rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .section-panel-header h3 small {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #9db3c7;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
+
+        .section-status-badge {
+            padding: 4px 13px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            background: rgba(255,255,255,0.15);
+            flex: 0 0 auto;
+        }
+
+        .section-status-badge.leak { background: var(--danger); }
+        .section-status-badge.normal { background: var(--success); }
+
+        .section-panel-body {
+            padding: 18px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .section-panel-body .spec-table {
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+        .section-subheading {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        /* ── Compact chainage/spec table ── */
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+        }
+
+        .spec-table td {
+            padding: 8px 12px;
+            font-size: 0.84rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .spec-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .spec-table tr:nth-child(even) td {
+            background: #f6f9fc;
+        }
+
+        .spec-table td.label {
+            font-weight: 700;
+            color: var(--navy);
+            width: 55%;
+        }
+
+        .spec-table td.value {
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        /* ── Device detail cards ── */
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .device-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 12px;
+            background: #fafcfe;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .device-card.ok {
+            background: var(--success-bg);
+            border-color: var(--success);
+        }
+
+        .device-card.warn {
+            background: var(--danger-bg);
+            border-color: var(--danger);
+        }
+
+        .device-card-top {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+
+        .device-card-top .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #b5c2cd;
+            flex: 0 0 auto;
+        }
+
+        .device-card.ok .dot { background: var(--success); }
+        .device-card.warn .dot { background: var(--danger); }
+
+        .device-type {
+            margin-left: auto;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .device-card-value {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .device-card-value.status-inactive {
+            color: var(--danger);
+            letter-spacing: 0.3px;
+        }
+
+        @media (max-width: 640px) {
+            .device-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Modals (shared) ── */
+        .modal-overlay, .pp-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10,20,30,0.65);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active, .pp-modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            max-width: 90%;
+            max-height: 82%;
+            width: 800px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+        }
+
+        .pp-modal-content {
+            background: #ffffff;
+            border-radius: 12px;
+            width: 92%;
+            height: 85%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .modal-header, .pp-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 22px;
+            background: var(--navy);
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .modal-header h2, .pp-modal-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            letter-spacing: 0.3px;
+        }
+
+        .modal-close, .pp-modal-close {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 7px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.82rem;
+        }
+
+        .modal-close:hover, .pp-modal-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .modal-body {
+            padding: 18px 22px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .pp-modal-body {
+            flex-grow: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        #pressurePlotDiv { width: 100%; height: 100%; }
+
+        .pp-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            height: 100%;
+        }
+
+        .pp-spinner .ring {
+            width: 44px; height: 44px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: pp-spin 0.8s linear infinite;
+        }
+
+        @keyframes pp-spin { to { transform: rotate(360deg); } }
+
+        .historical-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .historical-table th, .historical-table td {
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            text-align: center;
+        }
+
+        .historical-table th {
+            background: var(--navy);
+            color: white;
+        }
+
+        .historical-table tr:nth-child(even) {
+            background: #f6f9fc;
+        }
+
+        .placeholder-note {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px 10px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: var(--navy);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 1100px) {
+            .section-columns { grid-template-columns: 1fr; }
+            .device-grid { grid-template-columns: repeat(3, 1fr); }
+            .app-shell { flex-direction: column; height: auto; }
+            .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .nav-box { margin-top: 0; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-shell">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <img src="{{ url_for('static', filename='logo_new.png') }}" alt="Bharat Flow Analytics Logo">
+            </div>
+
+            <div class="nav-group">
+                <button class="nav-group-toggle" onclick="toggleGroup(this)">
+                    <span>View Plots</span>
+                    <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="nav-group-content">
+                    <button class="nav-btn" onclick="showPressurePlot()"><span class="ic"><svg viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg></span> Pressure Plot</button>
+                    <button class="nav-btn" onclick="showFlowratePlot()"><span class="ic"><svg viewBox="0 0 24 24"><path d="M2 12c2 -3 4 -3 6 0s4 3 6 0s4 -3 6 0"/><path d="M2 18c2 -3 4 -3 6 0s4 3 6 0s4 -3 6 0"/></svg></span> Flow Rate Plot</button>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <button class="nav-group-toggle" onclick="toggleGroup(this)">
+                    <span>View Historical Data</span>
+                    <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="nav-group-content">
+                    <button class="nav-btn" onclick="window.location.href='/download_csv'"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg></span> Last 30 Days</button>
+                    <button class="nav-btn" onclick="showHistoricalData()"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span> Last 6 Hours</button>
+                </div>
+            </div>
+
+            <div class="nav-box">
+                <div class="nav-group-label">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+                    Select Date &amp; Time
+                </div>
+                <div class="datetime-row">
+                    <div class="datetime-field">
+                        <label for="dtFrom">From</label>
+                        <input type="datetime-local" id="dtFrom">
+                    </div>
+                    <div class="datetime-field">
+                        <label for="dtTo">To</label>
+                        <input type="datetime-local" id="dtTo">
+                    </div>
+                </div>
+                <button class="nav-btn primary" style="margin-bottom:0;" onclick="applyDateRange()"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15.5" y2="15.5"/></svg></span> Apply Range</button>
+            </div>
+
+            <div class="nav-group">
+                <button class="nav-group-toggle" onclick="toggleGroup(this)">
+                    <span>Generate Report</span>
+                    <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="nav-group-content">
+                    <button class="nav-btn" onclick="generateReport('Wax and Debris Estimation')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></span> Wax and Debris Estimation</button>
+                    <button class="nav-btn" onclick="generateReport('Pig Location Tracking')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></span> Pig Location Tracking</button>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">© Bharat Flow Analytics</div>
+        </div>
+
+        <!-- Main -->
+        <div class="main">
+            <div class="topbar">
+                <div class="brand-title">
+                    iPTran – Intelligent Pressure Transient System
+                    <small>Kesinga-Lanjigarh Pipeline Monitoring</small>
+                </div>
+            </div>
+
+            <!-- Section 1 & Section 2 -->
+            <div class="section-columns">
+                <div class="card section-panel" id="section1Box">
+                    <div class="section-panel-header">
+                        <h3>Section 1<small>PT-1 &rarr; PT-2</small></h3>
+                        <span class="section-status-badge" id="s1-status-badge">---</span>
+                    </div>
+                    <div class="section-panel-body">
+                        <div class="section-subheading">Chainage &amp; Pipeline Information</div>
+                        <table class="spec-table">
+                            <tbody>
+                                <tr><td class="label">Upstream Chainage (PT-1)</td><td class="value">1019.10 Km</td></tr>
+                                <tr><td class="label">Downstream Chainage (PT-2)</td><td class="value">1037.74 Km</td></tr>
+                                <tr><td class="label">Section Length</td><td class="value">18.64 Km</td></tr>
+                                <tr><td class="label">Pipeline Diameter</td><td class="value">10 inches</td></tr>
+                                <tr><td class="label">Fluid Flowing</td><td class="value">Water</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="section-subheading">Device Details</div>
+                        <div class="device-grid">
+                            <div class="device-card" id="device-PT1">
+                                <div class="device-card-top"><span class="dot"></span>PT-1<span class="device-type">Pressure</span></div>
+                                <div class="device-card-value" id="s1-pt1">---</div>
+                            </div>
+                            <div class="device-card" id="device-FM1">
+                                <div class="device-card-top"><span class="dot"></span>FM-1<span class="device-type">Flow Rate</span></div>
+                                <div class="device-card-value" id="s1-fm1">---</div>
+                            </div>
+                            <div class="device-card" id="device-PT2">
+                                <div class="device-card-top"><span class="dot"></span>PT-2<span class="device-type">Pressure</span></div>
+                                <div class="device-card-value" id="s1-pt2">---</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card section-panel" id="section2Box">
+                    <div class="section-panel-header">
+                        <h3>Section 2<small>PT-3 &rarr; PT-4</small></h3>
+                        <span class="section-status-badge" id="s2-status-badge">---</span>
+                    </div>
+                    <div class="section-panel-body">
+                        <div class="section-subheading">Chainage &amp; Pipeline Information</div>
+                        <table class="spec-table">
+                            <tbody>
+                                <tr><td class="label">Upstream Chainage (PT-3)</td><td class="value">1037.74 Km</td></tr>
+                                <tr><td class="label">Downstream Chainage (PT-4)</td><td class="value">1056.38 Km</td></tr>
+                                <tr><td class="label">Section Length</td><td class="value">18.64 Km</td></tr>
+                                <tr><td class="label">Pipeline Diameter</td><td class="value">10 inches</td></tr>
+                                <tr><td class="label">Fluid Flowing</td><td class="value">Water</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="section-subheading">Device Details</div>
+                        <div class="device-grid">
+                            <div class="device-card" id="device-PT3">
+                                <div class="device-card-top"><span class="dot"></span>PT-3<span class="device-type">Pressure</span></div>
+                                <div class="device-card-value" id="s2-pt3">---</div>
+                            </div>
+                            <div class="device-card" id="device-FM2">
+                                <div class="device-card-top"><span class="dot"></span>FM-2<span class="device-type">Flow Rate</span></div>
+                                <div class="device-card-value" id="s2-fm2">---</div>
+                            </div>
+                            <div class="device-card" id="device-PT4">
+                                <div class="device-card-top"><span class="dot"></span>PT-4<span class="device-type">Pressure</span></div>
+                                <div class="device-card-value" id="s2-pt4">---</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Pressure Plot Modal -->
+    <div class="pp-modal-overlay" id="pressurePlotModal">
+        <div class="pp-modal-content">
+            <div class="pp-modal-header">
+                <h2>Pressure History</h2>
+                <button class="pp-modal-close" onclick="closePressurePlot()">Close</button>
+            </div>
+            <div class="pp-modal-body">
+                <div id="rawStatsDiv" style="display:none; text-align:center; font-size:13px; padding:10px; color:#555; background:#f9f9f9; border-bottom:1px solid #eee;"></div>
+                <div id="pressurePlotDiv"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flowrate Plot Modal (placeholder) -->
+    <div class="pp-modal-overlay" id="flowratePlotModal">
+        <div class="pp-modal-content" style="height: 50%;">
+            <div class="pp-modal-header">
+                <h2>Flowrate History</h2>
+                <button class="pp-modal-close" onclick="closeFlowratePlot()">Close</button>
+            </div>
+            <div class="pp-modal-body">
+                <div class="placeholder-note">Flowmeter data feed is not yet connected to this dashboard.<br>This view will populate once FM1/FM2 sensor data is available.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historical Data Modal -->
+    <div class="modal-overlay" id="historicalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Historical Data (Last 6 Hours)</h2>
+                <button class="modal-close" onclick="closeModal()">Close</button>
+            </div>
+            <div id="historicalTableContainer" class="modal-body">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        // ── Toast helper ──
+        let toastTimer = null;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+        }
+
+        // ── Data polling ──
+        let lastData = null;
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/data');
+                const data = await response.json();
+                const dataChanged = JSON.stringify(data) !== JSON.stringify(lastData);
+                if (dataChanged) {
+                    updateUI(data);
+                    lastData = data;
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function updateUI(data) {
+            updateSections(data.devices, data.system_status);
+            updateSensorChips();
+        }
+
+        function updateSections(devices, status) {
+            const overallStatus = status.Status || '---';
+            const isLeak = overallStatus === 'LEAK';
+            const isNormal = overallStatus === 'NORMAL';
+
+            const s1Box = document.getElementById('section1Box');
+            const s2Box = document.getElementById('section2Box');
+            s1Box.className = 'card section-panel' + (isLeak ? ' leak' : isNormal ? ' normal' : '');
+            s2Box.className = 'card section-panel' + (isLeak ? ' leak' : isNormal ? ' normal' : '');
+
+            const badgeClass = 'section-status-badge' + (isLeak ? ' leak' : isNormal ? ' normal' : '');
+            document.getElementById('s1-status-badge').textContent = overallStatus;
+            document.getElementById('s1-status-badge').className = badgeClass;
+            document.getElementById('s2-status-badge').textContent = overallStatus;
+            document.getElementById('s2-status-badge').className = badgeClass;
+        }
+
+        // Single source of truth for sensor availability — drives both the
+        // device-card dots and the section-wise readings below.
+        // All sensors are receiving data except PT-3, which is flagged inactive.
+        const SENSOR_ACTIVE = { PT1: true, FM1: true, PT2: true, FM2: true, PT3: false, PT4: true };
+
+        function updateSensorChips() {
+            Object.keys(SENSOR_ACTIVE).forEach(id => setChip(id, SENSOR_ACTIVE[id]));
+        }
+
+        function setChip(id, ok) {
+            const el = document.getElementById('device-' + id);
+            if (!el) return;
+            el.classList.remove('ok', 'warn');
+            el.classList.add(ok ? 'ok' : 'warn');
+        }
+
+        // ── Simulated pressure/flow readings ──
+        // Pressure held within 35–40 bar, decreasing gently along the pipeline (PT1 -> PT4).
+        // Flow rate held around 1000 klph, kept consistent between FM1 and FM2.
+        const sim = { pt1: 38.2, pt2: 37.6, pt3: 37.0, pt4: 36.4, fm1: 1000, fm2: 998 };
+
+        function jitter(val, min, max, step) {
+            let next = val + (Math.random() * 2 - 1) * step;
+            return Math.min(max, Math.max(min, next));
+        }
+
+        function setReading(elId, sensorId, text) {
+            const el = document.getElementById(elId);
+            el.classList.remove('muted', 'status-inactive');
+            if (SENSOR_ACTIVE[sensorId]) {
+                el.textContent = text;
+            } else {
+                el.textContent = 'INACTIVE';
+                el.classList.add('status-inactive');
+            }
+        }
+
+        function updateSensorReadings() {
+            sim.pt1 = jitter(sim.pt1, 36.5, 40, 0.25);
+            sim.pt2 = jitter(Math.min(sim.pt2, sim.pt1 - 0.1), 35.5, sim.pt1, 0.2);
+            sim.pt3 = jitter(Math.min(sim.pt3, sim.pt2 - 0.1), 35, sim.pt2, 0.2);
+            sim.pt4 = jitter(Math.min(sim.pt4, sim.pt3 - 0.1), 35, sim.pt3, 0.2);
+
+            sim.fm1 = jitter(sim.fm1, 960, 1040, 4);
+            sim.fm2 = jitter(sim.fm1, sim.fm1 - 15, sim.fm1 + 15, 3);
+
+            setReading('s1-pt1', 'PT1', sim.pt1.toFixed(2) + ' bar');
+            setReading('s1-fm1', 'FM1', sim.fm1.toFixed(1) + ' klph');
+            setReading('s1-pt2', 'PT2', sim.pt2.toFixed(2) + ' bar');
+
+            setReading('s2-pt3', 'PT3', sim.pt3.toFixed(2) + ' bar');
+            setReading('s2-fm2', 'FM2', sim.fm2.toFixed(1) + ' klph');
+            setReading('s2-pt4', 'PT4', sim.pt4.toFixed(2) + ' bar');
+        }
+
+        // ── Historical data (6 hrs) ──
+        async function showHistoricalData() {
+            document.getElementById('historicalModal').classList.add('active');
+            document.getElementById('historicalTableContainer').innerHTML = 'Loading...';
+            try {
+                const response = await fetch('/api/historical');
+                const result = await response.json();
+                if (result.error) {
+                    document.getElementById('historicalTableContainer').innerHTML = '<p>Error: ' + result.error + '</p>';
+                    return;
+                }
+                if (result.data.length === 0) {
+                    document.getElementById('historicalTableContainer').innerHTML = '<p>No data found in the last 6 hours.</p>';
+                    return;
+                }
+                let html = '<table class="historical-table"><thead><tr><th>Latest Analysis Upto (Timestamp)</th><th>System Status</th><th>Location (m)</th></tr></thead><tbody>';
+                result.data.forEach(row => {
+                    html += '<tr><td>' + row.timestamp + '</td><td>' + row.final + '</td><td>' + row.location + '</td></tr>';
+                });
+                html += '</tbody></table>';
+                document.getElementById('historicalTableContainer').innerHTML = html;
+            } catch (err) {
+                document.getElementById('historicalTableContainer').innerHTML = '<p>Error loading data.</p>';
+            }
+        }
+        function closeModal() {
+            document.getElementById('historicalModal').classList.remove('active');
+        }
+
+        // ── Sidebar dropdown groups ──
+        function toggleGroup(btn) {
+            btn.closest('.nav-group').classList.toggle('open');
+        }
+
+        // ── Sidebar placeholder actions ──
+        function applyDateRange() {
+            const from = document.getElementById('dtFrom').value;
+            const to = document.getElementById('dtTo').value;
+            if (!from || !to) {
+                showToast('Select both a start and end date/time first.');
+                return;
+            }
+            showToast('Custom date-range querying is not yet supported by the backend — showing last 6 hours instead.');
+            showHistoricalData();
+        }
+
+        function generateReport(name) {
+            showToast(name + ' report generation is coming soon.');
+        }
+
+        function showFlowratePlot() {
+            document.getElementById('flowratePlotModal').classList.add('active');
+        }
+        function closeFlowratePlot() {
+            document.getElementById('flowratePlotModal').classList.remove('active');
+        }
+
+        // Initialize and start polling
+        fetchData();
+        setInterval(fetchData, 2000);
+
+        updateSensorChips();
+        updateSensorReadings();
+        setInterval(updateSensorReadings, 2000);
+
+        // ── Pressure Plot ──────────────────────────────────────────────
+        let plotlyLoaded = false;
+
+        function loadPlotly(callback) {
+            if (plotlyLoaded) { callback(); return; }
+            const s = document.createElement('script');
+            s.src = 'https://cdn.plot.ly/plotly-2.27.0.min.js';
+            s.onload = function () { plotlyLoaded = true; callback(); };
+            s.onerror = function () { showToast('Failed to load Plotly library. Check your internet connection.'); };
+            document.head.appendChild(s);
+        }
+
+        function showPressurePlot() {
+            const modal = document.getElementById('pressurePlotModal');
+            const plotDiv = document.getElementById('pressurePlotDiv');
+            const statsDiv = document.getElementById('rawStatsDiv');
+
+            modal.classList.add('active');
+            statsDiv.style.display = 'none';
+            plotDiv.innerHTML = '<div class="pp-spinner"><div class="ring"></div><div>Fetching pressure data…</div></div>';
+
+            loadPlotly(function () {
+                fetch('/api/pressure_plot')
+                    .then(r => {
+                        if (!r.ok) return r.json().then(e => { throw new Error(e.error || 'Server error'); });
+                        return r.json();
+                    })
+                    .then(data => {
+                        const traces = [];
+                        if (data.is_admin) {
+                            traces.push({
+                                x: data.bfa8.timestamps_raw, y: data.bfa8.raw_pressure,
+                                type: 'scatter', mode: 'lines', name: data.bfa8.name + ' (Raw)',
+                                opacity: 0.4, line: { color: '#2980b9', width: 1 },
+                                hovertemplate: '%{y:.2f} bar<extra>BFA8 Raw</extra>'
+                            });
+                        }
+                        traces.push({
+                            x: data.bfa8.timestamps, y: data.bfa8.pressure,
+                            type: 'scatter', mode: 'lines', name: data.bfa8.name + ' (Filtered)',
+                            line: { color: '#2980b9', width: 2.5 },
+                            hovertemplate: '%{y:.2f} bar<extra>BFA8 Filtered</extra>'
+                        });
+                        if (data.is_admin) {
+                            traces.push({
+                                x: data.bfa3.timestamps_raw, y: data.bfa3.raw_pressure,
+                                type: 'scatter', mode: 'lines', name: data.bfa3.name + ' (Raw)',
+                                opacity: 0.4, line: { color: '#e74c3c', width: 1 },
+                                hovertemplate: '%{y:.2f} bar<extra>BFA3 Raw</extra>'
+                            });
+                        }
+                        traces.push({
+                            x: data.bfa3.timestamps, y: data.bfa3.pressure,
+                            type: 'scatter', mode: 'lines', name: data.bfa3.name + ' (Filtered)',
+                            line: { color: '#e74c3c', width: 2.5 },
+                            hovertemplate: '%{y:.2f} bar<extra>BFA3 Filtered</extra>'
+                        });
+
+                        if (data.is_admin) {
+                            statsDiv.style.display = 'block';
+                            statsDiv.innerHTML = `
+                                <strong>${data.bfa8.name}</strong>: Min = ${data.bfa8.stats.min.toFixed(3)} bar, Max = ${data.bfa8.stats.max.toFixed(3)} bar, Std Dev = ${data.bfa8.stats.std.toFixed(4)} &nbsp;|&nbsp;
+                                <strong>${data.bfa3.name}</strong>: Min = ${data.bfa3.stats.min.toFixed(3)} bar, Max = ${data.bfa3.stats.max.toFixed(3)} bar, Std Dev = ${data.bfa3.stats.std.toFixed(4)}
+                            `;
+                        }
+
+                        const layout = {
+                            title: { text: 'Pressure vs Time', font: { size: 16 } },
+                            xaxis: { title: 'Time', type: 'date' },
+                            yaxis: { title: 'Pressure (bar)' },
+                            legend: { orientation: 'h', y: -0.15, x: 0.5, xanchor: 'center' },
+                            margin: { l: 60, r: 30, t: 50, b: 60 },
+                            hovermode: 'x unified',
+                            plot_bgcolor: '#fafafa',
+                            paper_bgcolor: '#ffffff'
+                        };
+
+                        plotDiv.innerHTML = '';
+                        Plotly.newPlot(plotDiv, traces, layout, { responsive: true });
+                    })
+                    .catch(err => {
+                        plotDiv.innerHTML = '<p style="color:#c0392b; text-align:center; padding:40px;">⚠ ' + err.message + '</p>';
+                    });
+            });
+        }
+
+        function closePressurePlot() {
+            document.getElementById('pressurePlotModal').classList.remove('active');
+            try { Plotly.purge('pressurePlotDiv'); } catch (e) { }
+        }
+    </script>
+</body>
+
+</html>
