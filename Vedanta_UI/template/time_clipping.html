@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Time Window for Analysis — iPTran</title>
+    <style>
+        :root {
+            --navy: #0f2942;
+            --navy-dark: #0a1d30;
+            --accent: #2563eb;
+            --accent-dark: #1d4ed8;
+            --success: #16a34a;
+            --success-dark: #128a3e;
+            --neutral-bg: #eef2f6;
+            --border: #d7dee6;
+            --text-dark: #16232f;
+            --text-muted: #5b6b7a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            min-height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--neutral-bg);
+            color: var(--text-dark);
+        }
+
+        .topbar {
+            background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
+            color: #eaf1f9;
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar h1 { font-size: 1.25rem; font-weight: 700; }
+        .topbar h1 small { display: block; font-size: 0.72rem; font-weight: 500; color: #9db3c7; margin-top: 3px; }
+
+        .user-chip { display: flex; align-items: center; gap: 9px; }
+        .user-chip-avatar {
+            width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+            border: 2px solid var(--accent); background: var(--navy-dark);
+        }
+        .user-chip-text { display: flex; flex-direction: column; line-height: 1.25; }
+        .user-chip-name { font-size: 0.8rem; font-weight: 700; color: #eaf1f9; }
+        .user-chip-role { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.4px; color: #9db3c7; }
+        .user-chip-logout { font-size: 0.7rem; color: #7fb4ff; text-decoration: none; margin-left: 4px; }
+        .user-chip-logout:hover { color: #fff; }
+
+        .back-link {
+            color: #cfe0f2;
+            text-decoration: none;
+            font-size: 0.82rem;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 7px 14px;
+            border-radius: 7px;
+            transition: background 0.15s ease;
+        }
+        .back-link:hover { background: rgba(255,255,255,0.1); }
+
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 22px 26px 40px 26px; }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(15,41,66,0.06);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--navy);
+        }
+
+        .card-body { padding: 18px 20px; }
+
+        /* ── Tag chips ── */
+        .tag-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        .tag-chip {
+            display: flex; align-items: center; gap: 8px;
+            border: 1px solid var(--border);
+            background: #fafcfe;
+            border-radius: 20px;
+            padding: 7px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--navy);
+        }
+        .tag-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+
+        /* ── Selection form ── */
+        .sel-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: flex-end;
+        }
+
+        .sel-field { display: flex; flex-direction: column; gap: 6px; min-width: 240px; }
+        .sel-field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); font-weight: 700; height: 14px; line-height: 14px; }
+        .sel-field input, .sel-field select {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 10px;
+            height: 38px;
+            font-size: 0.88rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .sel-field .fmt-preview {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-family: 'Consolas', monospace;
+            height: 14px;
+            line-height: 14px;
+        }
+        .sel-field .fmt-preview:empty::before { content: '\00a0'; }
+
+        /* ── Trend layout: sidebar (data-window presets) + main (signal/plot) ── */
+        .trend-layout { display: flex; gap: 18px; align-items: flex-start; }
+        .trend-sidebar {
+            width: 168px;
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 18px;
+            border-right: 1px solid var(--border);
+        }
+        .trend-sidebar-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px; }
+        .range-btn {
+            border: 1px solid var(--border);
+            background: #fafcfe;
+            color: var(--navy);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .range-btn:hover { background: #eef2f6; }
+        .range-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .range-btn.admin-only { border-color: #f0b429; }
+        .trend-main { flex: 1 1 auto; min-width: 0; }
+
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 22px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-dark); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: var(--success-dark); }
+        .btn:disabled { background: #b7c2cc; cursor: not-allowed; }
+
+        #plotDiv { width: 100%; height: 480px; }
+
+        .status-line { font-size: 0.82rem; color: var(--text-muted); padding: 4px 20px 14px 20px; }
+        .status-line.err { color: #c0392b; }
+
+        .run-row {
+            display: none;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: #f6fdf8;
+        }
+        .run-row.show { display: flex; }
+        .run-row .sel-summary { font-size: 0.85rem; color: var(--text-dark); }
+        .run-row .sel-summary b { color: var(--navy); }
+
+        .spinner-line {
+            display: flex; align-items: center; gap: 10px;
+            padding: 40px; color: var(--text-muted); font-size: 0.9rem;
+        }
+        .ring { width: 30px; height: 30px; border: 4px solid #e0e0e0; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">
+        <h1>Select Time Window for Analysis<small>Step 2 of 3 — Time Clipping · Main UI &rarr; Time Clipping &rarr; iPTran</small></h1>
+        <div style="display:flex; align-items:center; gap:16px;">
+            <div class="user-chip">
+                <img class="user-chip-avatar" src="{{ url_for('static', filename='admin.jpg' if role == 'admin' else 'user.png') }}" alt="{{ username }}">
+                <div class="user-chip-text">
+                    <div class="user-chip-name">{{ username }}</div>
+                    <div class="user-chip-role">{{ role }}</div>
+                </div>
+                <a href="/logout" class="user-chip-logout">Logout</a>
+            </div>
+            <a class="back-link" href="/">🏠 Home</a>
+        </div>
+    </div>
+
+    <div class="wrap">
+        <div class="card">
+            <div class="card-header">Pipeline Tags</div>
+            <div class="card-body">
+                <div class="tag-row">
+                    <div class="tag-chip"><span class="dot"></span>PT-101</div>
+                    <div class="tag-chip"><span class="dot"></span>FM-101</div>
+                    <div class="tag-chip"><span class="dot"></span>PT-102</div>
+                    <div class="tag-chip"><span class="dot"></span>PT-201</div>
+                    <div class="tag-chip"><span class="dot"></span>FM-201</div>
+                    <div class="tag-chip"><span class="dot"></span>PT-202</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Pressure Trend (last <span id="hoursLabel">6</span> hours)</div>
+            <div class="card-body" style="padding-top:16px;">
+                <div class="trend-layout">
+                    <div class="trend-sidebar">
+                        <div class="trend-sidebar-title">Data Window</div>
+                        <button class="range-btn" id="rangeBtn-4" onclick="selectRange(4)">4 Hours</button>
+                        <button class="range-btn" id="rangeBtn-6" onclick="selectRange(6)">6 Hours</button>
+                        <button class="range-btn" id="rangeBtn-24" onclick="selectRange(24)">24 Hours</button>
+                        {% if role == 'admin' %}
+                        <button class="range-btn admin-only" id="rangeBtn-72" onclick="selectRange(72)">72 Hours <span style="opacity:0.75; font-weight:500;">(Admin)</span></button>
+                        {% endif %}
+                    </div>
+
+                    <div class="trend-main">
+                        <div class="sel-form">
+                            <div class="sel-field">
+                                <label for="deviceSel">Signal</label>
+                                <select id="deviceSel">
+                                    <option value="section1">Section 1 (PT-101 &amp; PT-102)</option>
+                                    <option value="section2">Section 2 (PT-201 &amp; PT-202)</option>
+                                </select>
+                                <span class="fmt-preview"></span>
+                            </div>
+                            <div class="sel-field">
+                                <label for="startInput">Start Time</label>
+                                <input type="datetime-local" id="startInput" step="1">
+                                <span class="fmt-preview" id="startPreview">YYYY-MM-DD-HH-MM-SS</span>
+                            </div>
+                            <div class="sel-field">
+                                <label for="endInput">End Time</label>
+                                <input type="datetime-local" id="endInput" step="1">
+                                <span class="fmt-preview" id="endPreview">YYYY-MM-DD-HH-MM-SS</span>
+                            </div>
+                            <button class="btn btn-primary" id="okBtn" onclick="applySelection()">OK — Highlight Selection</button>
+                        </div>
+
+                        <div class="status-line" id="statusLine" style="padding-left:0; padding-right:0;"></div>
+                        <div id="plotDiv"><div class="spinner-line"><div class="ring"></div>Loading pressure data…</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="run-row" id="runRow">
+                <div class="sel-summary">Selected window: <b id="summaryText"></b></div>
+                <button class="btn btn-success" id="runBtn" onclick="goToIptran()">Run iPTran App &rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script>
+        const CLIP_FMT_RE = /^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}$/;
+
+        function toClipFormat(dtLocalValue) {
+            if (!dtLocalValue) return '';
+            let v = dtLocalValue.length === 16 ? dtLocalValue + ':00' : dtLocalValue; // add seconds if missing
+            return v.replace('T', '-').split(':').join('-');
+        }
+
+        function toDatetimeLocal(clipStr) {
+            const parts = clipStr.split('-');
+            if (parts.length < 6) return '';
+            const [y, mo, d, h, mi, s] = parts;
+            return `${y}-${mo}-${d}T${h}:${mi}:${s}`;
+        }
+
+        // The site's clock is always IST (Asia/Kolkata), but a plain `new Date(str)` /
+        // `toISOString()` round-trip silently converts through the *browser's* system
+        // timezone, which shifts a datetime-local value by however far that timezone is
+        // from IST (5.5h if the browser happens to be UTC). These two helpers convert
+        // explicitly via the IST offset instead, so the picker always shows/reads true
+        // IST wall-clock digits no matter what timezone the browser is set to.
+        const IST_OFFSET_MS = 5.5 * 60 * 60000;
+
+        function toISTInputValue(date) {
+            // date: a real Date for a correct absolute instant.
+            // Returns "YYYY-MM-DDTHH:MM:SS" showing that instant's IST wall-clock digits.
+            return new Date(date.getTime() + IST_OFFSET_MS).toISOString().slice(0, 19);
+        }
+
+        function fromISTInputValue(inputVal) {
+            // inputVal: "YYYY-MM-DDTHH:MM:SS" of IST wall-clock digits (from a
+            // datetime-local input). Returns a real Date for the correct absolute instant.
+            const naiveUtc = new Date(inputVal + 'Z');
+            return new Date(naiveUtc.getTime() - IST_OFFSET_MS);
+        }
+
+        let windowData = null;
+        let selection = null; // {startISO, endISO}
+        let demoNotice = '';
+
+        function refreshPreviews() {
+            document.getElementById('startPreview').textContent = toClipFormat(document.getElementById('startInput').value) || 'YYYY-MM-DD-HH-MM-SS';
+            document.getElementById('endPreview').textContent = toClipFormat(document.getElementById('endInput').value) || 'YYYY-MM-DD-HH-MM-SS';
+        }
+        document.getElementById('startInput').addEventListener('input', refreshPreviews);
+        document.getElementById('endInput').addEventListener('input', refreshPreviews);
+        document.getElementById('deviceSel').addEventListener('change', () => renderPlot());
+
+        function setStatus(msg, isErr) {
+            const el = document.getElementById('statusLine');
+            el.textContent = msg || '';
+            el.className = 'status-line' + (isErr ? ' err' : '');
+        }
+
+        let currentHours = 6;
+
+        function setActiveRangeBtn(hours) {
+            document.querySelectorAll('.range-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.getElementById('rangeBtn-' + hours);
+            if (btn) btn.classList.add('active');
+        }
+
+        function selectRange(hours) {
+            if (hours === currentHours) return;
+            currentHours = hours;
+            setActiveRangeBtn(hours);
+            selection = null;
+            document.getElementById('runRow').classList.remove('show');
+            loadWindow(hours);
+        }
+
+        async function loadWindow(hours) {
+            document.getElementById('plotDiv').innerHTML = '<div class="spinner-line"><div class="ring"></div>Loading pressure data…</div>';
+            setStatus('');
+            setActiveRangeBtn(hours);
+            try {
+                const r = await fetch('/api/pressure_window?hours=' + hours);
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.error || 'Failed to load pressure data');
+                windowData = data;
+                document.getElementById('hoursLabel').textContent = Math.round(data.hours);
+                demoNotice = data.is_demo ? '⚠ Live sensor feed unavailable — showing synthetic demo data for this session.' : '';
+                setStatus(demoNotice, false);
+
+                // Default selection: last 30 minutes of the available window
+                const end = new Date(data.common_end);
+                const start = new Date(end.getTime() - 30 * 60000);
+                document.getElementById('startInput').value = toISTInputValue(start);
+                document.getElementById('endInput').value = toISTInputValue(end);
+                refreshPreviews();
+
+                renderPlot();
+            } catch (err) {
+                document.getElementById('plotDiv').innerHTML = '<p style="color:#c0392b; text-align:center; padding:40px;">⚠ ' + err.message + '</p>';
+            }
+        }
+
+        // Each section has two separate PTs (PT-101/PT-102 for Section 1, PT-201/PT-202 for
+        // Section 2) — always show both together, never as one merged line.
+        function currentSeries() {
+            const dev = document.getElementById('deviceSel').value;
+            return dev === 'section1' ? [windowData.pt1, windowData.pt2] : [windowData.pt3, windowData.pt4];
+        }
+
+        function sectionLabel() {
+            return document.getElementById('deviceSel').value === 'section1' ? 'Section 1 (PT-101 / PT-102)' : 'Section 2 (PT-201 / PT-202)';
+        }
+
+        function renderPlot() {
+            if (!windowData) return;
+            const [seriesA, seriesB] = currentSeries();
+
+            const traces = [
+                { x: seriesA.timestamps, y: seriesA.pressure, type: 'scatter', mode: 'lines', name: seriesA.name, line: { color: '#2563eb', width: 2 } },
+                { x: seriesB.timestamps, y: seriesB.pressure, type: 'scatter', mode: 'lines', name: seriesB.name, line: { color: '#93c5fd', width: 2 } }
+            ];
+
+            const layout = {
+                title: { text: 'Pressure vs Time — ' + sectionLabel(), font: { size: 15 } },
+                xaxis: { title: 'Time', type: 'date' },
+                yaxis: { title: 'Pressure (bar)' },
+                margin: { l: 55, r: 25, t: 45, b: 50 },
+                hovermode: 'x unified',
+                plot_bgcolor: '#fafafa',
+                paper_bgcolor: '#ffffff',
+                shapes: buildShapes()
+            };
+
+            document.getElementById('plotDiv').innerHTML = '';
+            Plotly.newPlot('plotDiv', traces, layout, { responsive: true });
+        }
+
+        function buildShapes() {
+            if (!windowData) return [];
+            const [series] = currentSeries();
+            const xMin = series.timestamps[0];
+            const xMax = series.timestamps[series.timestamps.length - 1];
+            const shapes = [];
+
+            if (selection) {
+                // Grey-out regions outside the selection (data stays underneath, just visually dimmed)
+                shapes.push({
+                    type: 'rect', xref: 'x', yref: 'paper',
+                    x0: xMin, x1: selection.startISO, y0: 0, y1: 1,
+                    fillcolor: 'rgba(120,130,140,0.35)', line: { width: 0 }, layer: 'above'
+                });
+                shapes.push({
+                    type: 'rect', xref: 'x', yref: 'paper',
+                    x0: selection.endISO, x1: xMax, y0: 0, y1: 1,
+                    fillcolor: 'rgba(120,130,140,0.35)', line: { width: 0 }, layer: 'above'
+                });
+                // Highlight the selected window
+                shapes.push({
+                    type: 'rect', xref: 'x', yref: 'paper',
+                    x0: selection.startISO, x1: selection.endISO, y0: 0, y1: 1,
+                    fillcolor: 'rgba(37,99,235,0.12)', line: { color: '#2563eb', width: 1.5 }, layer: 'above'
+                });
+            }
+            return shapes;
+        }
+
+        function applySelection() {
+            const startVal = document.getElementById('startInput').value;
+            const endVal = document.getElementById('endInput').value;
+            if (!startVal || !endVal) { setStatus('Please choose both a start and end time.', true); return; }
+
+            const startDt = fromISTInputValue(startVal);
+            const endDt = fromISTInputValue(endVal);
+            if (!(endDt > startDt)) { setStatus('End time must be after start time.', true); return; }
+
+            const [series] = currentSeries();
+            const seriesStart = new Date(series.timestamps[0]);
+            const seriesEnd = new Date(series.timestamps[series.timestamps.length - 1]);
+            if (startDt < seriesStart || endDt > seriesEnd) {
+                setStatus('Selected window must fall within the displayed pressure trend.', true);
+                return;
+            }
+
+            // Use IST-offset ("+05:30") strings here, matching the format the backend
+            // sends for trace timestamps (see ts_to_iso_ist). startDt.toISOString() would
+            // emit UTC ("Z") instead, which Plotly's date axis does not reconcile with the
+            // IST-offset trace timestamps — that mismatch is what caused the highlighted
+            // selection rectangle to land ~5.5 hours away from the intended window.
+            selection = {
+                startISO: startVal.length === 16 ? startVal + ':00+05:30' : startVal + '+05:30',
+                endISO: endVal.length === 16 ? endVal + ':00+05:30' : endVal + '+05:30',
+                startClip: toClipFormat(startVal),
+                endClip: toClipFormat(endVal),
+                device: document.getElementById('deviceSel').value
+            };
+
+            renderPlot();
+            setStatus(demoNotice, false);
+            document.getElementById('summaryText').textContent =
+                selection.startClip + '  →  ' + selection.endClip + '  (' + sectionLabel() + ')';
+            document.getElementById('runRow').classList.add('show');
+        }
+
+        function goToIptran() {
+            if (!selection) return;
+            const params = new URLSearchParams({
+                start: selection.startClip,
+                end: selection.endClip,
+                device: selection.device
+            });
+            window.open('/iptran?' + params.toString(), '_blank');
+        }
+
+        loadWindow(6);
+    </script>
+</body>
+
+</html>

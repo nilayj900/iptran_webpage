@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — BFA iPTran Dashboard</title>
+    <style>
+        :root {
+            --navy: #0f2942;
+            --navy-dark: #0a1d30;
+            --accent: #2563eb;
+            --accent-dark: #1d4ed8;
+            --danger: #dc2626;
+            --danger-bg: #fde8e8;
+            --neutral-bg: #eef2f6;
+            --border: #d7dee6;
+            --text-dark: #16232f;
+            --text-muted: #5b6b7a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            font-family: Aptos, Arial, Helvetica, sans-serif;
+            background: linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 100%);
+            color: var(--text-dark);
+        }
+
+        .wrap {
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .login-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            width: 380px;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .login-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 26px 30px 20px 30px;
+            text-align: center;
+        }
+
+        .logo-plate {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--neutral-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 18px;
+        }
+
+        .logo-plate img {
+            height: 96px;
+            width: 100%;
+            object-fit: contain;
+        }
+
+        .title-plate {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--navy) 100%);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 6px;
+        }
+
+        .login-header h1 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .login-header p {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.85);
+            margin-top: 4px;
+        }
+
+        .login-body { padding: 4px 30px 6px 30px; }
+
+        .field { margin-bottom: 16px; }
+        .field label {
+            display: block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .field .input-wrap {
+            position: relative;
+        }
+        .field .input-wrap svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: #9aa7b4;
+            pointer-events: none;
+        }
+        .field input {
+            width: 100%;
+            border: 1px solid var(--border);
+            background: #f7f9fb;
+            border-radius: 999px;
+            padding: 11px 16px 11px 40px;
+            font-size: 0.92rem;
+            font-family: inherit;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .field input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+            background: #fff;
+        }
+
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 22px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .remember-row input { width: 14px; height: 14px; accent-color: var(--accent); }
+
+        .error-banner {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid rgba(220,38,38,0.25);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .btn-signin {
+            width: 100%;
+            border: none;
+            border-radius: 999px;
+            padding: 13px 14px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--navy) 100%);
+            cursor: pointer;
+            transition: filter 0.15s ease, transform 0.1s ease;
+        }
+        .btn-signin:hover { filter: brightness(1.08); }
+        .btn-signin:active { transform: scale(0.98); }
+
+        .login-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            padding: 22px 30px 26px 30px;
+            margin-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        .login-footer .logo-plate {
+            margin-bottom: 4px;
+            padding: 10px 14px;
+        }
+
+        .login-footer .logo-plate img {
+            height: 72px;
+        }
+
+        .product-by {
+            font-style: italic;
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-plate">
+                    <img src="{{ url_for('static', filename='vedanta_logo.png') }}" alt="Vedanta">
+                </div>
+                <div class="title-plate">
+                    <h1>iPTran</h1>
+                    <p></p>
+                </div>
+            </div>
+            <div class="login-body">
+                {% if error %}
+                <div class="error-banner">{{ error }}</div>
+                {% endif %}
+                <form method="POST" action="{{ url_for('login_page') }}">
+                    <input type="hidden" name="next" value="{{ next }}">
+                    <div class="field">
+                        <label for="username">Username</label>
+                        <div class="input-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                            <input type="text" id="username" name="username" autocomplete="username" autofocus required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <div class="input-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                            <input type="password" id="password" name="password" autocomplete="current-password" required>
+                        </div>
+                    </div>
+                    <label class="remember-row">
+                        <input type="checkbox" name="remember">
+                        Remember Me
+                    </label>
+                    <button type="submit" class="btn-signin">Sign In</button>
+                </form>
+            </div>
+            <div class="login-footer">
+                <div class="product-by">A product by</div>
+                <div class="logo-plate">
+                    <img src="{{ url_for('static', filename='logo_new.png') }}" alt="Bharat Flow Analytics">
+                </div>
+                <div>© Bharat Flow Analytics</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

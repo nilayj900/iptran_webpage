@@ -1,0 +1,18 @@
+{
+  "L": 37000.0,
+  "dx": 500.0,
+  "soundspeed": 1059.0,
+  "od": 10.75,
+  "wall": 0.0071,
+  "viscosity": 2e-07,
+  "density": 531.65,
+  "fix_start": 5.0,
+  "fix_end": 0.5,
+  "block_size": 3.0,
+  "max_iter": 40.0,
+  "q0": 50.0,
+  "h_up": 660.0,
+  "h_ref": 643.0,
+  "t_total": 240.0,
+  "t_stable": 25.0
+}

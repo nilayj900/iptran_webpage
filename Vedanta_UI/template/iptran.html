@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPTran Software — Web</title>
+    <style>
+        :root {
+            --navy: #0f2942;
+            --navy-dark: #0a1d30;
+            --accent: #2563eb;
+            --accent-dark: #1d4ed8;
+            --success: #16a34a;
+            --success-dark: #128a3e;
+            --danger: #dc2626;
+            --neutral-bg: #eef2f6;
+            --border: #d7dee6;
+            --text-dark: #16232f;
+            --text-muted: #5b6b7a;
+            --sidebar-w: 360px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--neutral-bg);
+            color: var(--text-dark);
+        }
+
+        .app-shell { display: flex; height: 100vh; width: 100%; }
+
+        .sidebar {
+            width: var(--sidebar-w);
+            flex: 0 0 auto;
+            background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
+            color: #eaf1f9;
+            padding: 18px 16px 24px 16px;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .sidebar h1 { font-size: 1.05rem; font-weight: 800; margin-bottom: 2px; }
+        .sidebar .sub { font-size: 0.7rem; color: #9db3c7; margin-bottom: 16px; }
+
+        .user-chip {
+            display: flex; align-items: center; gap: 9px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 8px 10px;
+            margin-bottom: 14px;
+        }
+        .user-chip-avatar {
+            width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+            border: 2px solid var(--accent); background: var(--navy-dark); flex: 0 0 auto;
+        }
+        .user-chip-text { display: flex; flex-direction: column; line-height: 1.25; flex: 1 1 auto; min-width: 0; }
+        .user-chip-name { font-size: 0.8rem; font-weight: 700; color: #eaf1f9; }
+        .user-chip-role { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.4px; color: #9db3c7; }
+        .user-chip-logout { font-size: 0.7rem; color: #7fb4ff; text-decoration: none; flex: 0 0 auto; }
+        .user-chip-logout:hover { color: #fff; }
+
+        .group {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px 12px 6px 12px;
+            margin-bottom: 12px;
+        }
+        .group-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; color: #8fa5ba; margin-bottom: 8px; }
+
+        .field-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
+        .field-row label { font-size: 0.78rem; color: #dce8f4; flex: 1 1 auto; }
+        .field-row input, .field-row select {
+            width: 110px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: #eaf1f9;
+            border-radius: 6px;
+            padding: 5px 7px;
+            font-size: 0.8rem;
+            font-family: inherit;
+        }
+        .field-row input.wide, .field-row select.wide { width: 100%; }
+        .field-row.stack { flex-direction: column; align-items: stretch; }
+
+        input[type="file"] {
+            font-size: 0.72rem;
+            color: #dce8f4;
+        }
+
+        .adv-toggle {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.8rem; color: #dce8f4;
+            padding: 6px 4px; cursor: pointer; user-select: none;
+        }
+
+        .adv-body { display: none; }
+        .adv-body.open { display: block; }
+
+        .role-banner {
+            background: rgba(255,176,32,0.12);
+            border: 1px solid rgba(255,176,32,0.35);
+            color: #ffb020;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 9px 11px;
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        .field-row.locked label::after { content: ' 🔒'; opacity: 0.75; }
+        .field-row input:disabled, .field-row select:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            padding: 11px 14px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: background 0.15s ease, transform 0.1s ease, opacity .15s ease;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-dark); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: var(--success-dark); }
+        .btn-neutral { background: rgba(255,255,255,0.1); color: #eaf1f9; border: 1px solid rgba(255,255,255,0.24); }
+        .btn-neutral:hover:not(:disabled) { background: rgba(255,255,255,0.18); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .content { flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: auto; padding: 18px 24px; min-width: 0; min-height: 0; }
+
+        .topbar {
+            background: #fff; border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px 20px; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .topbar h2 { font-size: 1.1rem; color: var(--navy); }
+        .topbar .badge { font-size: 0.72rem; padding: 4px 10px; border-radius: 20px; background: #eef2f6; color: var(--text-muted); font-weight: 700; }
+        .topbar .badge.ok { background: #e7f7ec; color: var(--success-dark); }
+        .topbar .badge.err { background: #fde8e8; color: var(--danger); }
+
+        .clip-window-note { font-size: 0.72rem; color: #9db3c7; line-height: 1.6; margin-bottom: 10px; }
+        .clip-window-note b { color: #eaf1f9; font-weight: 700; }
+        .clip-window-note .warn { color: #ffb020; }
+        .clip-window-note a { color: #7fb4ff; }
+
+        .plot-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+        .plot-card .tabbar { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--border); background: #f6f9fc; }
+        .plot-tab {
+            border: none; background: transparent; cursor: pointer;
+            padding: 11px 18px; font-size: 0.82rem; font-weight: 700; font-family: inherit;
+            color: var(--text-muted); border-bottom: 2px solid transparent;
+            transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        .plot-tab:hover { color: var(--navy); background: rgba(37,99,235,0.06); }
+        .plot-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: #fff; }
+        .plot-card .body { padding: 8px; }
+        .plot-pane { display: none; }
+        .plot-pane.active { display: block; }
+        .plot-pane > div { width: 100%; height: clamp(260px, 42vh, 380px); }
+        .plot-placeholder { display: flex; align-items: center; justify-content: center; height: clamp(260px, 42vh, 380px); color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 0 20px; }
+
+        /* pane-selected holds TWO stacked charts, not one — the generic clamp above
+           (sized for a single full-height chart) makes each of them up to 380px tall,
+           760px combined, which is what reads as a huge gap between them. Fixed,
+           smaller heights here instead. */
+        #pane-selected { display: flex; flex-direction: column; gap: 6px; }
+        #selectedPressurePlotDiv, #selectedFlowPlotDiv { width: 100%; height: clamp(180px, 27vh, 300px); }
+        #selectedFlowPlotDiv { height: clamp(140px, 18vh, 200px); }
+
+        .log-card { background: #101c2b; border-radius: 10px; padding: 14px 16px; color: #c7e3ff; font-family: 'Consolas', monospace; font-size: 0.78rem; height: 170px; overflow-y: auto; margin-bottom: 16px; white-space: pre-wrap; }
+
+        .status-note { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+        .status-note.err { color: var(--danger); }
+    </style>
+</head>
+
+<body>
+    <div class="app-shell">
+        <div class="sidebar">
+            <h1>iPTran Software</h1>
+            <div class="sub">Bharat Flow Analytics — Web</div>
+
+            <div class="user-chip">
+                <img class="user-chip-avatar" src="{{ url_for('static', filename='admin.jpg' if role == 'admin' else 'user.png') }}" alt="{{ username }}">
+                <div class="user-chip-text">
+                    <div class="user-chip-name">{{ username }}</div>
+                    <div class="user-chip-role">{{ role }}</div>
+                </div>
+                <a href="/logout" class="user-chip-logout">Logout</a>
+            </div>
+
+            <div class="role-banner" id="roleBanner" style="display:none;">🔒 Viewer Mode — only Data Clipping (Seconds) is editable. All other parameters are fixed by the administrator.</div>
+
+            {% if role == 'admin' %}
+            <div class="group">
+                <div class="group-title">PT Data (CSV) — Admin Only</div>
+                <div class="field-row stack">
+                    <label for="ptCsvFile">PT Data CSV (time, pressure columns) — overrides the fetched sensor window below if selected</label>
+                    <input type="file" id="ptCsvFile" class="wide" accept=".csv">
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="group">
+                <div class="group-title">Elevation Data</div>
+                <div class="field-row stack">
+                    <label for="elevFile">Elevation File (.xlsx) — optional, demo profile used if omitted</label>
+                    <input type="file" id="elevFile" class="wide" accept=".xlsx,.xls">
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">Data Clipping (Seconds)</div>
+                <div class="clip-window-note" id="clipWindowNote"></div>
+                <div class="field-row"><label>Start Time [s]</label><input type="number" id="p_clip_start" step="0.1" placeholder="0"></div>
+                <div class="field-row"><label>Stop Time [s]</label><input type="number" id="p_clip_stop" step="0.1" placeholder="0"></div>
+                <button class="btn btn-primary" style="margin-top:2px;" id="updateClipBtn" onclick="updateClipPreview()" disabled>Update Plot Preview</button>
+            </div>
+
+            <div class="group">
+                <div class="group-title">Geometry</div>
+                <div class="field-row"><label>Length (L) [m]</label><input type="number" id="p_L" value="69500"></div>
+                <div class="field-row"><label>Pipe OD [inch]</label><input type="number" id="p_od" value="10.75" step="0.01"></div>
+                <div class="field-row"><label>Wall Thickness [m]</label><input type="number" id="p_wall" value="0.0071" step="0.0001"></div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">Grid</div>
+                <div class="field-row"><label>Grid Step (dx) [m]</label><input type="number" id="p_dx" value="500"></div>
+                <div class="field-row"><label>Sound Speed [m/s]</label><input type="number" id="p_soundspeed" value="820"></div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">Pipeline Properties</div>
+                <div class="field-row"><label>Viscosity [m²/s]</label><input type="number" id="p_viscosity" value="0.0000002" step="0.0000001"></div>
+                <div class="field-row"><label>Density (rho) [kg/m³]</label><input type="number" id="p_density" value="531.65" step="0.01"></div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">MOC Simulation (Single Valve)</div>
+                <div class="field-row"><label>Flow Rate (Q0) [m³/h]</label><input type="number" id="p_q0" value="50"></div>
+                <div class="field-row"><label>Upstream Head [m]</label><input type="number" id="p_h_up" value="660"></div>
+                <div class="field-row"><label>Reference Head [m]</label><input type="number" id="p_h_ref" value="643"></div>
+                <div class="field-row"><label>Total Time [s]</label><input type="number" id="p_t_total" value="240"></div>
+                <div class="field-row"><label>Stabilization Time [s]</label><input type="number" id="p_t_stable" value="25"></div>
+            </div>
+
+            <div class="adv-toggle" onclick="toggleAdvanced()">
+                <input type="checkbox" id="advChk" onclick="event.stopPropagation(); toggleAdvanced();"> Show Advanced Settings
+            </div>
+            <div class="adv-body group" id="advBody">
+                <div class="group-title">Advanced / Optimization</div>
+                <div class="field-row"><label>Fixed Start Length [km]</label><input type="number" id="p_fix_start" value="5.0"></div>
+                <div class="field-row"><label>Fixed End Length [km]</label><input type="number" id="p_fix_end" value="0.5"></div>
+                <div class="field-row"><label>Block Size [km]</label><input type="number" id="p_block_size" value="3.0"></div>
+                <div class="field-row"><label>Max Iterations</label><input type="number" id="p_max_iter" value="40"></div>
+            </div>
+
+            <button class="btn btn-primary" id="previewBtn" onclick="runPreview()">PREVIEW INITIAL STATE</button>
+            <button class="btn btn-success" id="runBtn" onclick="runOptimization()" disabled>RUN iPTran APP (OPTIMIZE)</button>
+            <button class="btn btn-neutral" id="reportBtn" onclick="downloadReport()" disabled>SAVE PDF REPORT</button>
+        </div>
+
+        <div class="content">
+            <div class="topbar">
+                <h2>iPTran — Intelligent Pressure Transient Analysis</h2>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="badge" id="engineBadge">checking engine…</span>
+                    <span class="badge" id="roleBadge"></span>
+                    <button class="btn btn-success" id="saveConfigBtn" onclick="saveConfiguration()" style="display:none; width:auto; margin-bottom:0; padding:8px 16px;">💾 Save Configuration</button>
+                    <a href="/" class="btn btn-primary" style="width:auto; margin-bottom:0; padding:8px 16px; text-decoration:none; display:inline-block;">🏠 Home</a>
+                </div>
+            </div>
+
+            <div class="status-note" id="runStatus"></div>
+
+            <div class="plot-card">
+                <div class="tabbar">
+                    <button class="plot-tab active" data-tab="selected" onclick="showTab('selected')">Selected Signal</button>
+                    <button class="plot-tab" data-tab="initial" onclick="showTab('initial')">Initial State</button>
+                    <button class="plot-tab" data-tab="clipped" onclick="showTab('clipped')">Clipped Signal</button>
+                    <button class="plot-tab" data-tab="match" onclick="showTab('match')">Current Iteration Match</button>
+                    <button class="plot-tab" data-tab="diameter" onclick="showTab('diameter')">Optimized Diameters</button>
+                </div>
+                <div class="body">
+                    <div class="plot-pane active" id="pane-selected">
+                        <div id="selectedPressurePlotDiv"><div class="plot-placeholder">Pick a time window on the Time Clipping page to see its PT signals here.</div></div>
+                        <div id="selectedFlowPlotDiv"></div>
+                    </div>
+                    <div class="plot-pane" id="pane-initial"><div id="initialPlotDiv"><div class="plot-placeholder">Run "Preview Initial State" to load PT data, then use Data Clipping (Seconds) in the sidebar to select a range.</div></div></div>
+                    <div class="plot-pane" id="pane-clipped"><div id="clippedPlotDiv"><div class="plot-placeholder">The clipped sub-range will appear here once a clip range is selected.</div></div></div>
+                    <div class="plot-pane" id="pane-match"><div id="matchPlotDiv"><div class="plot-placeholder">Run "Run iPTran App" to see the pressure match update per iteration.</div></div></div>
+                    <div class="plot-pane" id="pane-diameter"><div id="diamPlotDiv"><div class="plot-placeholder">Diameter profile appears once optimization iterations run.</div></div></div>
+                </div>
+            </div>
+
+            <div class="log-card" id="logCard">Execution log will appear here…</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script>
+        const USER_ROLE = "{{ role }}";
+
+        // ── Role lock: 'user' accounts may only edit Data Clipping (Seconds) — every
+        // other sidebar parameter is disabled and grayed out with a lock icon. This is
+        // a UI convenience only; the server independently enforces the same restriction
+        // (see _iptran_form_for_role in app.py) so it can't be bypassed via the API. ──
+        const LOCKED_FIELD_IDS = [
+            'p_L', 'p_od', 'p_wall', 'p_dx', 'p_soundspeed', 'p_viscosity', 'p_density',
+            'p_q0', 'p_h_up', 'p_h_ref', 'p_t_total', 'p_t_stable',
+            'p_fix_start', 'p_fix_end', 'p_block_size', 'p_max_iter'
+        ];
+
+        function applyRoleLock() {
+            const roleBadge = document.getElementById('roleBadge');
+            roleBadge.textContent = USER_ROLE === 'admin' ? 'Admin' : 'Viewer';
+            roleBadge.className = 'badge' + (USER_ROLE === 'admin' ? ' ok' : '');
+
+            if (USER_ROLE === 'admin') {
+                document.getElementById('saveConfigBtn').style.display = 'inline-block';
+                return;
+            }
+
+            document.getElementById('roleBanner').style.display = 'block';
+
+            const elevInput = document.getElementById('elevFile');
+            elevInput.disabled = true;
+            elevInput.closest('.field-row').classList.add('locked');
+
+            LOCKED_FIELD_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.disabled = true;
+                el.closest('.field-row').classList.add('locked');
+            });
+        }
+        applyRoleLock();
+
+        // ── Global iPTran parameter defaults (persisted server-side) — whatever an admin
+        // last saved applies to every user, admin and viewer alike, until changed again. ──
+        const IPTRAN_PARAM_FIELD_IDS = {
+            L: 'p_L', dx: 'p_dx', soundspeed: 'p_soundspeed', od: 'p_od', wall: 'p_wall',
+            viscosity: 'p_viscosity', density: 'p_density',
+            fix_start: 'p_fix_start', fix_end: 'p_fix_end', block_size: 'p_block_size', max_iter: 'p_max_iter',
+            q0: 'p_q0', h_up: 'p_h_up', h_ref: 'p_h_ref', t_total: 'p_t_total', t_stable: 'p_t_stable'
+        };
+
+        async function loadGlobalIptranSettings() {
+            try {
+                const r = await fetch('/api/iptran/settings');
+                if (!r.ok) return;
+                const settings = await r.json();
+                Object.entries(IPTRAN_PARAM_FIELD_IDS).forEach(([key, id]) => {
+                    const el = document.getElementById(id);
+                    if (el && settings[key] !== undefined) el.value = settings[key];
+                });
+            } catch (e) {
+                console.error('Failed to load saved iPTran settings', e);
+            }
+        }
+        loadGlobalIptranSettings();
+
+        const ENGINE_AVAILABLE = {{ 'true' if iptran_available else 'false' }};
+        const badge = document.getElementById('engineBadge');
+        if (ENGINE_AVAILABLE) {
+            badge.textContent = 'Engine ready';
+            badge.className = 'badge ok';
+        } else {
+            badge.textContent = 'Engine unavailable on server';
+            badge.className = 'badge err';
+            document.getElementById('previewBtn').disabled = true;
+            document.getElementById('runBtn').disabled = true;
+        }
+
+        function toggleAdvanced() {
+            const box = document.getElementById('advChk');
+            document.getElementById('advBody').classList.toggle('open', box.checked);
+        }
+
+        // ── Plot tabs (Initial State / Clipped Signal / Current Iteration Match / Optimized Diameters) ──
+        function showTab(name) {
+            document.querySelectorAll('.plot-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+            document.querySelectorAll('.plot-pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + name));
+        }
+
+        // ── Read start/end/device passed in from the Time Clipping page ──
+        const SIGNAL_LABELS = {
+            section1: 'Section 1 (PT-101 & PT-102)',
+            section2: 'Section 2 (PT-201 & PT-202)'
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialStart = urlParams.get('start');
+        const initialEnd = urlParams.get('end');
+        const initialDevice = urlParams.get('device') || 'section1';
+
+        // The Time Clipping screen (step 2) is the single source of truth for the selected
+        // window — this page just displays it and lets you jump back to change it, rather
+        // than duplicating that whole interactive picker here.
+        let clipSelection = initialStart && initialEnd ? {
+            startClip: initialStart, endClip: initialEnd, device: initialDevice
+        } : null;
+
+        function hasPtUpload() {
+            const el = document.getElementById('ptCsvFile');
+            return !!(el && el.files.length);
+        }
+
+        function renderClipWindowNote() {
+            const note = document.getElementById('clipWindowNote');
+            if (!clipSelection) {
+                if (hasPtUpload()) {
+                    note.innerHTML = `<b>Using uploaded PT Data CSV</b> — the time window below is not used.`;
+                    document.getElementById('previewBtn').disabled = false;
+                    document.getElementById('runBtn').disabled = false;
+                    return;
+                }
+                note.innerHTML = `<span class="warn">No time window selected.</span> <a href="/time_clipping">Go to Time Clipping</a> to pick one, or upload a PT Data CSV above.`;
+                document.getElementById('previewBtn').disabled = true;
+                document.getElementById('runBtn').disabled = true;
+                return;
+            }
+            note.innerHTML = hasPtUpload()
+                ? `<b>Using uploaded PT Data CSV</b> — overrides the time window below.<br>${SIGNAL_LABELS[clipSelection.device] || clipSelection.device}, ${clipSelection.startClip} &rarr; ${clipSelection.endClip}<br><a href="/time_clipping">Edit Selection</a>`
+                : `
+                <b>${SIGNAL_LABELS[clipSelection.device] || clipSelection.device}</b><br>
+                ${clipSelection.startClip} &rarr; ${clipSelection.endClip}<br>
+                <a href="/time_clipping">Edit Selection</a>
+            `;
+        }
+        renderClipWindowNote();
+        const ptCsvInputEl = document.getElementById('ptCsvFile');
+        if (ptCsvInputEl) ptCsvInputEl.addEventListener('change', renderClipWindowNote);
+
+        // ── Selected Signal tab: the section's PT pair + flowrate for the exact window
+        // picked on the Time Clipping page, shown immediately on load — before Preview or
+        // Run is ever clicked. ──
+        async function loadSelectedSignalPreview() {
+            if (!clipSelection) return;
+            const div = document.getElementById('selectedPressurePlotDiv');
+            div.innerHTML = '<div class="plot-placeholder">Loading selected signal…</div>';
+            try {
+                const qs = new URLSearchParams({ device: clipSelection.device, start: clipSelection.startClip, end: clipSelection.endClip });
+                const r = await fetch('/api/iptran/signal_preview?' + qs.toString());
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.error || 'Failed to load selected signal');
+
+                const pressureTraces = [
+                    { x: data.pt_a.timestamps, y: data.pt_a.pressure, type: 'scatter', mode: 'lines', name: data.pt_a.name, line: { color: '#2563eb', width: 1.8 } },
+                    { x: data.pt_b.timestamps, y: data.pt_b.pressure, type: 'scatter', mode: 'lines', name: data.pt_b.name, line: { color: '#93c5fd', width: 1.8 } }
+                ];
+                // Both charts stacked here share one time axis — l/r margins must match
+                // exactly between them or their x-axes drift out of vertical alignment.
+                // Fixed at 70/15 (wide enough for the flow chart's 4-digit y-tick labels).
+                // The legend is floated INSIDE the pressure plot (not given its own margin
+                // row below the axis) — an external bottom legend was landing right on top
+                // of the "Time" axis title, creating the overlapping/gappy mess.
+                const SHARED_MARGIN = { l: 70, r: 15, t: 30, b: 40 };
+
+                const pressureLayout = {
+                    title: { text: 'Selected Window — ' + (SIGNAL_LABELS[data.device] || data.device) + (data.is_demo ? ' [Demo]' : ''), font: { size: 13 } },
+                    margin: SHARED_MARGIN, xaxis: { title: 'Time', type: 'date' }, yaxis: { title: 'Pressure (bar)' },
+                    legend: { orientation: 'h', x: 1, y: 1, xanchor: 'right', yanchor: 'bottom', bgcolor: 'rgba(255,255,255,0.6)' },
+                    plot_bgcolor: '#fafafa'
+                };
+                div.innerHTML = '';
+                Plotly.newPlot(div, pressureTraces, pressureLayout, { responsive: true, displayModeBar: false });
+
+                const flowDiv = document.getElementById('selectedFlowPlotDiv');
+                const flowTrace = { x: data.flowrate.timestamps, y: data.flowrate.value, type: 'scatter', mode: 'lines', name: data.flowrate.name, line: { color: '#16a34a', width: 1.8 } };
+                const flowLayout = {
+                    title: { text: data.flowrate.name + ' Flowrate (sample/demo data)', font: { size: 13 } },
+                    margin: SHARED_MARGIN, xaxis: { title: 'Time', type: 'date' }, yaxis: { title: 'Flowrate (klph)' },
+                    showlegend: false,
+                    plot_bgcolor: '#fafafa'
+                };
+                flowDiv.innerHTML = '';
+                Plotly.newPlot(flowDiv, [flowTrace], flowLayout, { responsive: true, displayModeBar: false });
+            } catch (err) {
+                div.innerHTML = '<p style="color:#dc2626; text-align:center; padding:40px; font-size:0.85rem;">⚠ ' + err.message + '</p>';
+            }
+        }
+        loadSelectedSignalPreview();
+
+        // ── Data Clipping (Seconds) — mirrors optimizer_ui_v10.py's sidebar clip panel:
+        // the full PT signal for the selected window is fetched once (via Preview), then
+        // Start/Stop [s] slice that already-fetched signal client-side, exactly like the
+        // desktop app's plot_initial_data() re-slicing its in-memory DataFrame. ──
+        let fullPT = null; // { t: [...], p: [...] } — full-window PT data from the last Preview
+
+        function renderClipTabs() {
+            if (!fullPT) return;
+            const tStart = parseFloat(document.getElementById('p_clip_start').value);
+            const tStop = parseFloat(document.getElementById('p_clip_stop').value);
+
+            const fullTrace = {
+                x: fullPT.t, y: fullPT.p, type: 'scatter', mode: 'lines', name: 'Full PT Data',
+                opacity: 0.5, line: { color: '#2563eb', width: 1.4 }
+            };
+            const clippedT = [], clippedP = [];
+            for (let i = 0; i < fullPT.t.length; i++) {
+                if (fullPT.t[i] >= tStart && fullPT.t[i] <= tStop) { clippedT.push(fullPT.t[i]); clippedP.push(fullPT.p[i]); }
+            }
+            const clippedTrace = { x: clippedT, y: clippedP, type: 'scatter', mode: 'lines', name: 'Clipped Region', line: { color: '#dc2626', width: 2 } };
+            const shapes = [
+                { type: 'line', xref: 'x', yref: 'paper', x0: tStart, x1: tStart, y0: 0, y1: 1, line: { color: '#16a34a', dash: 'dash', width: 1.5 } },
+                { type: 'line', xref: 'x', yref: 'paper', x0: tStop, x1: tStop, y0: 0, y1: 1, line: { color: '#dc2626', dash: 'dash', width: 1.5 } }
+            ];
+            const layoutInitial = {
+                title: { text: 'Initial PT Data (Select Clipping Range)', font: { size: 13 } },
+                margin: { l: 55, r: 15, t: 30, b: 40 }, xaxis: { title: 'Time (s)' }, yaxis: { title: 'Pressure (bar)' },
+                plot_bgcolor: '#fafafa', shapes
+            };
+            document.getElementById('initialPlotDiv').innerHTML = '';
+            Plotly.newPlot('initialPlotDiv', [fullTrace, clippedTrace], layoutInitial, { responsive: true, displayModeBar: false });
+
+            plotClipped(clippedT, clippedP);
+        }
+
+        function updateClipPreview() {
+            renderClipTabs();
+            showTab('initial');
+        }
+
+        // ── Log helper ──
+        function appendLog(lines) {
+            const card = document.getElementById('logCard');
+            if (card.textContent === 'Execution log will appear here…') card.textContent = '';
+            lines.forEach(l => { card.textContent += l + '\n'; });
+            card.scrollTop = card.scrollHeight;
+        }
+
+        function setRunStatus(msg, isErr) {
+            const el = document.getElementById('runStatus');
+            el.textContent = msg || '';
+            el.className = 'status-note' + (isErr ? ' err' : '');
+        }
+
+        function collectParams() {
+            return {
+                device: clipSelection ? clipSelection.device : '',
+                start: clipSelection ? clipSelection.startClip : '',
+                end: clipSelection ? clipSelection.endClip : '',
+                L: document.getElementById('p_L').value,
+                dx: document.getElementById('p_dx').value,
+                soundspeed: document.getElementById('p_soundspeed').value,
+                od: document.getElementById('p_od').value,
+                wall: document.getElementById('p_wall').value,
+                q0: document.getElementById('p_q0').value,
+                h_up: document.getElementById('p_h_up').value,
+                h_ref: document.getElementById('p_h_ref').value,
+                t_total: document.getElementById('p_t_total').value,
+                t_stable: document.getElementById('p_t_stable').value,
+                viscosity: document.getElementById('p_viscosity').value,
+                density: document.getElementById('p_density').value,
+                fix_start: document.getElementById('p_fix_start').value,
+                fix_end: document.getElementById('p_fix_end').value,
+                block_size: document.getElementById('p_block_size').value,
+                max_iter: document.getElementById('p_max_iter').value,
+                clip_start: document.getElementById('p_clip_start').value || 0,
+                clip_stop: document.getElementById('p_clip_stop').value || '',
+            };
+        }
+
+        async function saveConfiguration() {
+            const btn = document.getElementById('saveConfigBtn');
+            btn.disabled = true;
+            try {
+                const fd = new FormData();
+                Object.entries(IPTRAN_PARAM_FIELD_IDS).forEach(([key, id]) => {
+                    const el = document.getElementById(id);
+                    if (el) fd.append(key, el.value);
+                });
+                const r = await fetch('/api/iptran/settings', { method: 'POST', body: fd });
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.error || 'Save failed');
+
+                console.log('The new configuration is saved.');
+                setRunStatus('Configuration saved. These values are now the default for every user.');
+            } catch (err) {
+                setRunStatus('Save error: ' + err.message, true);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function plotMatch(t_pt, p_pt, t_sim, p_sim, simLabel) {
+            const traces = [
+                { x: t_pt, y: p_pt, type: 'scatter', mode: 'lines', name: 'PT Data', line: { color: '#16232f', width: 1.6 } },
+                { x: t_sim, y: p_sim, type: 'scatter', mode: 'lines', name: simLabel, line: { color: '#dc2626', width: 1.8 } }
+            ];
+            const layout = { margin: { l: 55, r: 15, t: 10, b: 40 }, xaxis: { title: 'Time (s)' }, yaxis: { title: 'Head / Pressure' }, plot_bgcolor: '#fafafa' };
+            document.getElementById('matchPlotDiv').innerHTML = '';
+            Plotly.newPlot('matchPlotDiv', traces, layout, { responsive: true, displayModeBar: false });
+        }
+
+        function plotClipped(t_pt, p_pt) {
+            const trace = { x: t_pt, y: p_pt, type: 'scatter', mode: 'lines', name: 'Clipped Signal', line: { color: '#dc2626', width: 1.8 } };
+            const layout = {
+                title: { text: 'Clipped Signal Only', font: { size: 13 } },
+                margin: { l: 55, r: 15, t: 30, b: 40 }, xaxis: { title: 'Time (s)' }, yaxis: { title: 'Pressure (bar)' }, plot_bgcolor: '#fafafa'
+            };
+            document.getElementById('clippedPlotDiv').innerHTML = '';
+            Plotly.newPlot('clippedPlotDiv', [trace], layout, { responsive: true, displayModeBar: false });
+        }
+
+        function plotDiameter(x_km, D_in) {
+            const trace = { x: x_km, y: D_in, type: 'scatter', mode: 'lines', name: 'Diameter (in)', line: { color: '#2563eb', width: 2 } };
+            const layout = { margin: { l: 55, r: 15, t: 10, b: 40 }, xaxis: { title: 'Chainage (km)' }, yaxis: { title: 'Diameter (in)' }, plot_bgcolor: '#fafafa' };
+            document.getElementById('diamPlotDiv').innerHTML = '';
+            Plotly.newPlot('diamPlotDiv', [trace], layout, { responsive: true, displayModeBar: false });
+        }
+
+        function appendElevationIfProvided(fd) {
+            const elevInput = document.getElementById('elevFile');
+            if (elevInput.files.length) fd.append('elevation_file', elevInput.files[0]);
+        }
+
+        function appendPtCsvIfProvided(fd) {
+            const ptInput = document.getElementById('ptCsvFile');
+            if (ptInput && ptInput.files.length) fd.append('pt_data_file', ptInput.files[0]);
+        }
+
+        async function runPreview() {
+            if (!clipSelection && !hasPtUpload()) { setRunStatus('Apply a time selection or upload a PT Data CSV first.', true); return; }
+
+            setRunStatus('Running initial MOC preview…');
+            document.getElementById('previewBtn').disabled = true;
+            try {
+                const fd = new FormData();
+                const params = collectParams();
+                Object.entries(params).forEach(([k, v]) => fd.append(k, v));
+                appendElevationIfProvided(fd);
+                appendPtCsvIfProvided(fd);
+
+                const r = await fetch('/api/iptran/preview', { method: 'POST', body: fd });
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.error || 'Preview failed');
+
+                fullPT = { t: data.t_pt, p: data.p_pt };
+                document.getElementById('p_clip_start').value = Math.round(data.t_pt[0] * 10) / 10;
+                document.getElementById('p_clip_stop').value = Math.round(data.t_pt[data.t_pt.length - 1] * 10) / 10;
+                document.getElementById('updateClipBtn').disabled = false;
+                document.getElementById('runBtn').disabled = false;
+                renderClipTabs();
+                plotMatch(data.t_pt, data.p_pt, data.t0, data.p0, 'Initial MOC');
+                showTab('initial');
+                const notes = [];
+                if (data.is_uploaded_pt) notes.push('your uploaded PT data CSV');
+                if (data.is_demo_elevation) notes.push('demo elevation profile (no file uploaded)');
+                if (data.is_demo_pt) notes.push('demo PT data (no live sensor feed for this window)');
+                setRunStatus(notes.length ? `Preview complete. (Using ${notes.join(' and ')}.)` : 'Preview complete.');
+            } catch (err) {
+                setRunStatus('Preview error: ' + err.message, true);
+            } finally {
+                document.getElementById('previewBtn').disabled = false;
+            }
+        }
+
+        let pollTimer = null;
+        let lastJobId = null;
+
+        async function runOptimization() {
+            if (!clipSelection && !hasPtUpload()) { setRunStatus('Apply a time selection or upload a PT Data CSV first.', true); return; }
+
+            setRunStatus('Starting optimization…');
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('reportBtn').disabled = true;
+            document.getElementById('logCard').textContent = '';
+            let sinceLog = 0, sinceIter = 0;
+
+            try {
+                const fd = new FormData();
+                const params = collectParams();
+                Object.entries(params).forEach(([k, v]) => fd.append(k, v));
+                appendElevationIfProvided(fd);
+                appendPtCsvIfProvided(fd);
+
+                const r = await fetch('/api/iptran/run', { method: 'POST', body: fd });
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.error || 'Failed to start optimization');
+
+                const startNotes = [];
+                if (data.is_uploaded_pt) startNotes.push('your uploaded PT data CSV');
+                if (data.is_demo_elevation) startNotes.push('demo elevation profile');
+                if (data.is_demo_pt) startNotes.push('demo PT data');
+                if (startNotes.length) {
+                    setRunStatus(`Using ${startNotes.join(' and ')}. Optimizing…`);
+                }
+
+                const jobId = data.job_id;
+                pollTimer = setInterval(async () => {
+                    const sr = await fetch(`/api/iptran/status/${jobId}?since_log=${sinceLog}&since_iter=${sinceIter}`);
+                    const sdata = await sr.json();
+                    if (!sr.ok) { clearInterval(pollTimer); setRunStatus('Status error: ' + (sdata.error || 'unknown'), true); document.getElementById('runBtn').disabled = false; return; }
+
+                    if (sdata.log.length) { appendLog(sdata.log); sinceLog = sdata.log_count; }
+                    if (sdata.iterations.length) {
+                        sinceIter = sdata.iter_count;
+                        const it = sdata.iterations[sdata.iterations.length - 1];
+                        plotMatch(it.t_pt, it.p_pt, it.t_opt, it.p_opt, `Iter ${it.iteration}`);
+                        plotDiameter(it.x_km, it.D_full_in);
+                        showTab('match');
+                        setRunStatus(`Iteration ${it.iteration} — Max ΔD = ${it.max_delta_D_mm.toFixed(3)} mm`);
+                    }
+
+                    if (sdata.status === 'done') {
+                        clearInterval(pollTimer);
+                        if (sdata.final) {
+                            plotMatch(sdata.final.t_pt, sdata.final.p_pt, sdata.final.t_opt, sdata.final.p_opt, 'Optimized');
+                            plotDiameter(sdata.final.x_km, sdata.final.D_opt_full_in);
+                            showTab('match');
+                        }
+                        setRunStatus('Optimization complete.');
+                        document.getElementById('runBtn').disabled = false;
+                        lastJobId = jobId;
+                        document.getElementById('reportBtn').disabled = false;
+                    } else if (sdata.status === 'error') {
+                        clearInterval(pollTimer);
+                        setRunStatus('Optimization error: ' + sdata.error, true);
+                        document.getElementById('runBtn').disabled = false;
+                    }
+                }, 1200);
+            } catch (err) {
+                setRunStatus('Error: ' + err.message, true);
+                document.getElementById('runBtn').disabled = false;
+            }
+        }
+
+        function downloadReport() {
+            if (!lastJobId) return;
+            window.location.href = '/api/iptran/report/' + lastJobId;
+        }
+    </script>
+</body>
+
+</html>
