@@ -173,7 +173,7 @@
            (sized for a single full-height chart) makes each of them up to 380px tall,
            760px combined, which is what reads as a huge gap between them. Fixed,
            smaller heights here instead. */
-        #pane-selected { display: flex; flex-direction: column; gap: 6px; }
+        #pane-selected.active { display: flex; flex-direction: column; gap: 6px; }
         #selectedPressurePlotDiv, #selectedFlowPlotDiv { width: 100%; height: clamp(180px, 27vh, 300px); }
         #selectedFlowPlotDiv { height: clamp(140px, 18vh, 200px); }
 
