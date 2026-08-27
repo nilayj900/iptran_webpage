@@ -901,7 +901,7 @@
                                 <tr><td class="label">Upstream Chainage (PT-101)</td><td class="value">1019.10 Km</td></tr>
                                 <tr><td class="label">Downstream Chainage (PT-102)</td><td class="value">1037.74 Km</td></tr>
                                 <tr><td class="label">Section Length</td><td class="value">18.64 Km</td></tr>
-                                <tr><td class="label">Pipeline Nominal Diameter</td><td class="value">10 inches</td></tr>
+                                <tr><td class="label">Pipeline Nominal Diameter</td><td class="value">28 inches</td></tr>
                                 <tr><td class="label">Fluid</td><td class="value">Water</td></tr>
                             </tbody>
                         </table>
@@ -943,21 +943,21 @@
                                 <tr><td class="label">Upstream Chainage (PT-201)</td><td class="value">1037.74 Km</td></tr>
                                 <tr><td class="label">Downstream Chainage (PT-202)</td><td class="value">1056.38 Km</td></tr>
                                 <tr><td class="label">Section Length</td><td class="value">18.64 Km</td></tr>
-                                <tr><td class="label">Pipeline Nominal Diameter</td><td class="value">10 inches</td></tr>
+                                <tr><td class="label">Pipeline Nominal Diameter</td><td class="value">28 inches</td></tr>
                                 <tr><td class="label">Fluid</td><td class="value">Water</td></tr>
                             </tbody>
                         </table>
                         <div class="section-subheading">Device Details</div>
                         <div class="device-grid">
+                            <div class="device-card" id="device-LT1">
+                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>LT-201</div></div>
+                                <div class="device-card-value" id="s2-lt1">---</div>
+                                <div class="device-card-meta"><span class="device-type">Level Transmitter</span></div>
+                            </div>
                             <div class="device-card" id="device-PT3">
                                 <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>PT-201</div></div>
                                 <div class="device-card-value" id="s2-pt3">---</div>
                                 <div class="device-card-meta"><span class="device-type">Pressure</span></div>
-                            </div>
-                            <div class="device-card" id="device-FM2">
-                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>FM-201</div></div>
-                                <div class="device-card-value" id="s2-fm2">---</div>
-                                <div class="device-card-meta"><span class="device-type">Flow Rate</span></div>
                             </div>
                             <div class="device-card" id="device-PT4">
                                 <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>PT-202</div></div>
@@ -1074,7 +1074,7 @@
         // Single source of truth for sensor availability — drives both the
         // device-card dots and the section-wise readings below.
         // All sensors are receiving data except PT-201, which is flagged inactive.
-        const SENSOR_ACTIVE = { PT1: true, FM1: true, PT2: true, FM4: true, FM2: true, FM3: true, PT3: false, PT4: true };
+        const SENSOR_ACTIVE = { PT1: true, FM1: true, PT2: true, FM4: true, LT1: true, FM3: true, PT3: false, PT4: true };
 
         function updateSensorChips() {
             Object.keys(SENSOR_ACTIVE).forEach(id => setChip(id, SENSOR_ACTIVE[id]));
@@ -1090,7 +1090,14 @@
         // ── Simulated pressure/flow readings ──
         // Pressure held within 35–40 bar, decreasing gently along the pipeline (PT1 -> PT4).
         // Flow rate held around 1000 klph, kept consistent between FM1 and FM2.
-        const sim = { pt1: 38.2, pt2: 37.6, pt3: 37.0, pt4: 36.4, fm1: 1000, fm4: 996, fm2: 998, fm3: 998 };
+        const sim = { pt1: 38.2, pt2: 37.6, pt3: 37.0, pt4: 36.4, fm1: 1000, fm4: 996, fm3: 998 };
+
+        // ── Level transmitter (LT-201) ──
+        // Starts at 10 m and rises by 1 cm every 15 s.
+        const LT1_START_M = 10;
+        const LT1_STEP_M = 0.01;
+        const LT1_STEP_INTERVAL_MS = 15000;
+        const lt1StartTime = Date.now();
 
         function jitter(val, min, max, step) {
             let next = val + (Math.random() * 2 - 1) * step;
@@ -1116,16 +1123,17 @@
 
             sim.fm1 = jitter(sim.fm1, 960, 1040, 4);
             sim.fm4 = jitter(Math.min(sim.fm4, sim.fm1), sim.fm1 - 15, sim.fm1, 3);
-            sim.fm2 = jitter(sim.fm4, sim.fm4 - 15, sim.fm4 + 15, 3);
-            sim.fm3 = jitter(sim.fm2, sim.fm2 - 15, sim.fm2 + 15, 3);
+            sim.fm3 = jitter(sim.fm4, sim.fm4 - 15, sim.fm4 + 15, 3);
 
             setReading('s1-pt1', 'PT1', sim.pt1.toFixed(2) + ' bar');
             setReading('s1-fm1', 'FM1', sim.fm1.toFixed(1) + ' klph');
             setReading('s1-pt2', 'PT2', sim.pt2.toFixed(2) + ' bar');
             setReading('s1-fm4', 'FM4', sim.fm4.toFixed(1) + ' klph');
 
+            const lt1Steps = Math.floor((Date.now() - lt1StartTime) / LT1_STEP_INTERVAL_MS);
+            const lt1Level = LT1_START_M + lt1Steps * LT1_STEP_M;
+            setReading('s2-lt1', 'LT1', lt1Level.toFixed(2) + ' m');
             setReading('s2-pt3', 'PT3', sim.pt3.toFixed(2) + ' bar');
-            setReading('s2-fm2', 'FM2', sim.fm2.toFixed(1) + ' klph');
             setReading('s2-fm3', 'FM3', sim.fm3.toFixed(1) + ' klph');
             setReading('s2-pt4', 'PT4', sim.pt4.toFixed(2) + ' bar');
         }
@@ -1336,7 +1344,7 @@
                     type: 'scatter', mode: 'lines', line: { color: '#16a34a', width: 2 }
                 },
                 {
-                    x: timestamps, y: flowrateFm2, name: 'FM-201 (klph) — sample',
+                    x: timestamps, y: flowrateFm2, name: 'FM-202 (klph) — sample',
                     type: 'scatter', mode: 'lines', line: { color: '#0891b2', width: 2 }
                 }
             ];
