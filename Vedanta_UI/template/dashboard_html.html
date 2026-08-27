@@ -66,8 +66,11 @@
         }
 
         .sidebar-brand img {
-            height: 76px;
+            max-height: 76px;
+            max-width: 100%;
             width: auto;
+            height: auto;
+            object-fit: contain;
             border-radius: 8px;
             background: #fff;
             padding: 6px;
@@ -352,7 +355,7 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            padding: 18px 26px 26px 26px;
+            padding: 12px 26px 14px 26px;
             min-width: 0;
             min-height: 0;
         }
@@ -362,15 +365,15 @@
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
 
         .brand-title {
             background: #fff;
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 14px 26px;
-            font-size: 1.35rem;
+            padding: 8px 26px;
+            font-size: 1.2rem;
             font-weight: 700;
             color: var(--navy);
             box-shadow: 0 1px 3px rgba(15,41,66,0.06);
@@ -400,6 +403,23 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-top: 12px;
+        }
+
+        .pipeline-diagram-card {
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pipeline-diagram-card img {
+            width: 100%;
+            height: auto;
+            max-width: 1400px;
+            max-height: 26vh;
+            object-fit: contain;
         }
 
         .section-panel {
@@ -459,7 +479,7 @@
         .section-status-badge.normal { background: var(--success); }
 
         .section-panel-body {
-            padding: 18px 20px 20px 20px;
+            padding: 12px 20px 14px 20px;
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -483,11 +503,11 @@
         .spec-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 18px;
+            margin-bottom: 10px;
         }
 
         .spec-table td {
-            padding: 8px 12px;
+            padding: 6px 12px;
             font-size: 0.84rem;
             border-bottom: 1px solid var(--border);
         }
@@ -514,7 +534,7 @@
         /* ── Device detail cards ── */
         .device-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
         }
 
@@ -536,14 +556,23 @@
             border-color: var(--danger);
         }
 
+        .device-card.vedanta-asset {
+            background: #e5f2fd;
+            border-color: #7cb9e8;
+        }
+
         .device-card-top {
+            margin-bottom: 8px;
+            white-space: nowrap;
+        }
+
+        .device-card-name {
             display: flex;
             align-items: center;
             gap: 6px;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: var(--navy);
-            margin-bottom: 8px;
         }
 
         .device-card-top .dot {
@@ -557,12 +586,29 @@
         .device-card.ok .dot { background: var(--success); }
         .device-card.warn .dot { background: var(--danger); }
 
+        .device-card-meta {
+            margin-top: 6px;
+        }
+
         .device-type {
-            margin-left: auto;
-            font-size: 0.6rem;
+            font-size: 0.62rem;
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .device-type-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .device-type-sub {
+            font-size: 0.62rem;
+            font-weight: 600;
+            font-style: italic;
+            color: var(--text-muted);
+            text-transform: none;
             letter-spacing: 0.3px;
         }
 
@@ -769,7 +815,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-brand">
-                <img src="{{ url_for('static', filename='logo_new.png') }}" alt="Bharat Flow Analytics Logo">
+                <img src="{{ url_for('static', filename='vedanta_logo.png') }}" alt="Vedanta Logo">
             </div>
 
             <div class="nav-group">
@@ -822,6 +868,7 @@
                     <div class="user-card-role{{ ' admin' if role == 'admin' else '' }}">{{ role }}</div>
                     <a href="/logout" class="user-card-logout">Logout</a>
                 </div>
+                <img src="{{ url_for('static', filename='logo_new.png') }}" alt="Bharat Flow Analytics Logo" style="height:64px; width:auto; max-width:100%; object-fit:contain; border-radius:6px; background:#fff; padding:6px; margin-top:12px;">
                 <div style="margin-top:10px;">© Bharat Flow Analytics</div>
             </div>
         </div>
@@ -833,6 +880,11 @@
                     iPTran – Intelligent Pressure Transient System
                     <small>Kesinga-Lanjigarh Pipeline Monitoring</small>
                 </div>
+            </div>
+
+            <!-- Pipeline Diagram -->
+            <div class="card pipeline-diagram-card">
+                <img src="{{ url_for('static', filename='pipeline.png') }}" alt="Pipeline Diagram">
             </div>
 
             <!-- Section 1 & Section 2 -->
@@ -856,16 +908,24 @@
                         <div class="section-subheading">Device Details</div>
                         <div class="device-grid">
                             <div class="device-card" id="device-PT1">
-                                <div class="device-card-top"><span class="dot"></span>PT-101<span class="device-type">Pressure</span></div>
+                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>PT-101</div></div>
                                 <div class="device-card-value" id="s1-pt1">---</div>
+                                <div class="device-card-meta"><span class="device-type">Pressure</span></div>
                             </div>
-                            <div class="device-card" id="device-FM1">
-                                <div class="device-card-top"><span class="dot"></span>FM-101<span class="device-type">Flow Rate</span></div>
+                            <div class="device-card vedanta-asset" id="device-FM1">
+                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>FM-101</div></div>
                                 <div class="device-card-value" id="s1-fm1">---</div>
+                                <div class="device-card-meta"><span class="device-type-wrap"><span class="device-type">Flow Rate</span><span class="device-type-sub">(Vedanta Asset)</span></span></div>
                             </div>
                             <div class="device-card" id="device-PT2">
-                                <div class="device-card-top"><span class="dot"></span>PT-102<span class="device-type">Pressure</span></div>
+                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>PT-102</div></div>
                                 <div class="device-card-value" id="s1-pt2">---</div>
+                                <div class="device-card-meta"><span class="device-type">Pressure</span></div>
+                            </div>
+                            <div class="device-card" id="device-FM4">
+                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>FM-102</div></div>
+                                <div class="device-card-value" id="s1-fm4">---</div>
+                                <div class="device-card-meta"><span class="device-type">Flow Rate</span></div>
                             </div>
                         </div>
                     </div>
@@ -890,16 +950,24 @@
                         <div class="section-subheading">Device Details</div>
                         <div class="device-grid">
                             <div class="device-card" id="device-PT3">
-                                <div class="device-card-top"><span class="dot"></span>PT-201<span class="device-type">Pressure</span></div>
+                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>PT-201</div></div>
                                 <div class="device-card-value" id="s2-pt3">---</div>
+                                <div class="device-card-meta"><span class="device-type">Pressure</span></div>
                             </div>
                             <div class="device-card" id="device-FM2">
-                                <div class="device-card-top"><span class="dot"></span>FM-201<span class="device-type">Flow Rate</span></div>
+                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>FM-201</div></div>
                                 <div class="device-card-value" id="s2-fm2">---</div>
+                                <div class="device-card-meta"><span class="device-type">Flow Rate</span></div>
                             </div>
                             <div class="device-card" id="device-PT4">
-                                <div class="device-card-top"><span class="dot"></span>PT-202<span class="device-type">Pressure</span></div>
+                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>PT-202</div></div>
                                 <div class="device-card-value" id="s2-pt4">---</div>
+                                <div class="device-card-meta"><span class="device-type">Pressure</span></div>
+                            </div>
+                            <div class="device-card vedanta-asset" id="device-FM3">
+                                <div class="device-card-top"><div class="device-card-name"><span class="dot"></span>FM-202</div></div>
+                                <div class="device-card-value" id="s2-fm3">---</div>
+                                <div class="device-card-meta"><span class="device-type-wrap"><span class="device-type">Flow Rate</span><span class="device-type-sub">(Vedanta Asset)</span></span></div>
                             </div>
                         </div>
                     </div>
@@ -1006,7 +1074,7 @@
         // Single source of truth for sensor availability — drives both the
         // device-card dots and the section-wise readings below.
         // All sensors are receiving data except PT-201, which is flagged inactive.
-        const SENSOR_ACTIVE = { PT1: true, FM1: true, PT2: true, FM2: true, PT3: false, PT4: true };
+        const SENSOR_ACTIVE = { PT1: true, FM1: true, PT2: true, FM4: true, FM2: true, FM3: true, PT3: false, PT4: true };
 
         function updateSensorChips() {
             Object.keys(SENSOR_ACTIVE).forEach(id => setChip(id, SENSOR_ACTIVE[id]));
@@ -1022,7 +1090,7 @@
         // ── Simulated pressure/flow readings ──
         // Pressure held within 35–40 bar, decreasing gently along the pipeline (PT1 -> PT4).
         // Flow rate held around 1000 klph, kept consistent between FM1 and FM2.
-        const sim = { pt1: 38.2, pt2: 37.6, pt3: 37.0, pt4: 36.4, fm1: 1000, fm2: 998 };
+        const sim = { pt1: 38.2, pt2: 37.6, pt3: 37.0, pt4: 36.4, fm1: 1000, fm4: 996, fm2: 998, fm3: 998 };
 
         function jitter(val, min, max, step) {
             let next = val + (Math.random() * 2 - 1) * step;
@@ -1047,14 +1115,18 @@
             sim.pt4 = jitter(Math.min(sim.pt4, sim.pt3 - 0.1), 35, sim.pt3, 0.2);
 
             sim.fm1 = jitter(sim.fm1, 960, 1040, 4);
-            sim.fm2 = jitter(sim.fm1, sim.fm1 - 15, sim.fm1 + 15, 3);
+            sim.fm4 = jitter(Math.min(sim.fm4, sim.fm1), sim.fm1 - 15, sim.fm1, 3);
+            sim.fm2 = jitter(sim.fm4, sim.fm4 - 15, sim.fm4 + 15, 3);
+            sim.fm3 = jitter(sim.fm2, sim.fm2 - 15, sim.fm2 + 15, 3);
 
             setReading('s1-pt1', 'PT1', sim.pt1.toFixed(2) + ' bar');
             setReading('s1-fm1', 'FM1', sim.fm1.toFixed(1) + ' klph');
             setReading('s1-pt2', 'PT2', sim.pt2.toFixed(2) + ' bar');
+            setReading('s1-fm4', 'FM4', sim.fm4.toFixed(1) + ' klph');
 
             setReading('s2-pt3', 'PT3', sim.pt3.toFixed(2) + ' bar');
             setReading('s2-fm2', 'FM2', sim.fm2.toFixed(1) + ' klph');
+            setReading('s2-fm3', 'FM3', sim.fm3.toFixed(1) + ' klph');
             setReading('s2-pt4', 'PT4', sim.pt4.toFixed(2) + ' bar');
         }
 
